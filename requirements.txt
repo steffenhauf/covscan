@@ -1,0 +1,8 @@
+base45
+cbor2
+picamera
+gpiozero
+pyzbar
+
+# opencv is required but best installed via sudo apt-get install python3-opencv
+

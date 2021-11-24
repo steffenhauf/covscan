@@ -4,6 +4,9 @@ A RPI hack for creating a Covid Scanner
 
 ## Introduction
 
+[![Demo Video](https://img.youtube.com/vi/WZUVuwk_OJ8/0.jpg)](https://www.youtube.com/watch?v=WZUVuwk_OJ8)
+
+
 This project was born out of a not too serious discussion on how to
 cope with more stringend Covid-restrictions in Germany. Namely, on how
 to automate scanning the European Covid Passport as a door entry system.
@@ -101,3 +104,155 @@ in the top connector row.
 The complete PCB should look like this
 
 ![Full circuit sketch](./sketches/circuit_sketch.png)
+
+
+## Soldering the LEDs
+
+The system communicates via three LED at the top of the case. The easiest
+way to solder these in the right positions is to first directly attach the
+resistors to the led, and then use the case as a template for their spacing.
+All three LED can share a common base potential, and thus we solder the their
+short legs together and will then attach these to a ground pin of the PI
+(or rather the 4 pin connector). To keep everything tidy and safe we isolate
+each leg individually and then wrap the entire assembly in isolation tape.
+
+![LED assembly 1](./sketches/led_1.png)
+
+![LED assembly 2](./sketches/led_2.png)
+
+![LED assembly 3](./sketches/led_3.png)
+
+![LED assembly 3](./sketches/led_4.png)
+
+# Printing the Housing
+
+I won't give any detailed instructions on how you print the two provided
+STL files, as this depends on the 3D printer. On my Any Cubic M3 this worked
+without issues in about half a day.
+
+
+# Preparing the Raspberry PI
+
+Note: Rasbian recently move to a new Debian base, which does not yet
+have the same Python library support as the previous Buster version.
+Thus we use an the older version for this project.
+
+1. Download the appropriate ISO image: http://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/
+2. Use the Raspberry Etcher or any other etcher to burn the image to an SD
+   card.
+
+3. setup your PI zero for headless connection to the WIFI: https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking31
+4. setup ssh connections, by adding an empty file named "ssh" to the boot folder
+   of the SD card
+
+Once you are done with these steps, power up the PI and wait for a few minutes.
+You should now be able to connect to the system via ssh:
+
+```bash
+ssh pi@raspberrypi.local
+```
+
+The password is raspberry by default.
+
+# Installing Basic Dependencies
+
+If not already done so, ssh onto your PI. First let's make sure the system
+is up-to-date:
+
+```bash
+sudo apt-get update && apt-get upgrade -y
+```
+
+This will take a few minutes to complete and the PI will need to reboot
+afterwards.
+
+Now we can install some basic requirements
+
+```bash
+sudo apt-get install -y python3 python3-opencv python3-pip git libzbar0
+```
+
+Again this might take a while
+
+## Enabling the Camera
+
+Enter `raspo-config`
+```
+sudo raspi-config
+```
+
+Navigate to `Interfacing Options`, and then select to enable the camera.
+Your PI will need to reboot afterwards.
+
+## Cloning this Project and Installing Python Requirments
+
+First clone this project onto your PI
+
+```bash
+git clone https://github.com/steffenhauf/covscan.git
+```
+
+Now install the remaining requirements:
+
+```bash
+cd covscan
+sudo pip3 install -r requirements.txt
+```
+
+# Putting it all together
+
+With your PI setup (and powered down again), install the camera module
+to the PI by connecting the ribbon cable (make sure you have the orientation)
+correct. The contacts should be facing away from the camera lens on the
+camera module and the cable should be attached to the PI as indicated here:
+https://picamera.readthedocs.io/en/release-1.13/quickstart.html.
+
+Attach the LEDs to your connector on the prototype PCB and then attach the
+PI to the PCB.
+
+You might want to now consider powering the system and testing that everything
+works:
+
+```
+sudo python3 covscan/covid-scanner.py
+```
+
+This should start the scanner. The red and blue LED should light up,
+and the buzzer should buzz if there is someting within 100 cm of the
+distance sensor. The QR code scanner should read your vaccination code
+from a distance of about 8-10 cm, with the phone centered underneath the
+lens, and the green LED should indicate this.
+
+## Integrating into the Housing
+
+With the PI powered down again, gently slide in the PCB module into the groves,
+while guiding the cables in, after pushing the LED assembly through the holes.
+You will have to twist the camera cable by 180  degrees. This is possible but
+needs to be done very gentle, as to avoid  breaking the cable. The camera
+module should come to rest in the groves forseen for it.
+
+## Finalizing
+
+All that is missing is that the scanner auto-starts when you power the PI.
+For this we add and entry to the end of `/etc/rc.local`:
+
+```
+sudo nano /etc/rc.local
+```
+
+The last lines should now look like this.
+
+```bash
+sudo python3 /home/pi/covscan/covid-scanner.py &
+exit 0
+```
+
+# ToDos
+
+Putting everything together I noticed some flicker, which might be
+due to poor connections (or my soldering skills :) )
+
+More importantly, the housing currently ony fits iPhones well. Especially,
+if the buzzer feature is not need a 90° rotated camera view could be
+implemented.
+

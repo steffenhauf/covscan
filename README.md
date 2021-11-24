@@ -116,13 +116,13 @@ short legs together and will then attach these to a ground pin of the PI
 (or rather the 4 pin connector). To keep everything tidy and safe we isolate
 each leg individually and then wrap the entire assembly in isolation tape.
 
-![LED assembly 1](./sketches/led_1.png)
+![LED assembly 1](./images/led_1.png)
 
-![LED assembly 2](./sketches/led_2.png)
+![LED assembly 2](./images/led_2.png)
 
-![LED assembly 3](./sketches/led_3.png)
+![LED assembly 3](./images/led_3.png)
 
-![LED assembly 3](./sketches/led_4.png)
+![LED assembly 3](./images/led_4.png)
 
 # Printing the Housing
 
